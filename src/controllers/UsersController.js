@@ -1,74 +1,78 @@
 const knex = require('../database/knex')
-const { hash, compare } = require('bcryptjs')
-const AppError = require('../utils/AppError')
+// const { hash, compare } = require('bcryptjs')
+// const AppError = require('../utils/AppError')
 
 class UsersController {
   async create(request, response) {
     const { name, email, password } = request.body
 
-    const database = await knex()
-    const checkUserExist = await database.get(
-      'SELECT * FROM users WHERE email = (?)',
-      [email]
-    )
+    const id = await knex('users').insert({
+      name,
+      email,
+      password
+    })
+    await knex('users').insert(id)
 
-    if (checkUserExist) {
-      throw new AppError('this email is already in use')
-    }
-    const hashedPassword = await hash(password, 8)
-    await database.run(
-      'INSERT INTO users(name, email, password) VALUES (?, ?, ?)',
-      [name, email, hashedPassword]
-    )
+    //   const checkUserExist = await database.get(table.text('email'), [email])
 
-    return response.status(201).json()
-  }
+    //   if (checkUserExist) {
+    //     throw new AppError('this email is already in use')
+    //   }
+    //   const hashedPassword = await hash(password, 8)
+    //   await users.insert(
+    //     {
+    //       name,
+    //       email,
+    //       password
+    //     }[(name, email, hashedPassword)]
+    //   )
 
-  async update(request, response) {
-    const { name, email, password, old_password } = request.body
-    const { id } = request.params
+    //   return response.json()
+    // }
 
-    const database = await knex()
-    const user = await database.get('SELECT * FROM users WHERE id = (?)', [id])
+    // async update(request, response) {
+    //   const { name, email, password, old_password } = request.body
+    //   const { id } = request.params
 
-    if (!user) {
-      throw new AppError('User not found')
-    }
+    //   const database = await knex()
+    //   const user = await database.get(table.increments('id'), [id])
 
-    const userWithUpdatedEmail = await database.get(
-      'SELECT * FROM users WHERE email = (?)',
-      [email]
-    )
-    if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
-      throw new AppError('this email is already in use')
-    }
-    user.name = name ?? user.name
-    user.email = email ?? user.email
+    //   if (!user) {
+    //     throw new AppError('User not found')
+    //   }
 
-    if (password && !old_password) {
-      throw new AppError(
-        'you need to enter the old password to set the new password!'
-      )
-    }
+    //   const userWithUpdatedEmail = await database.get(table.text('email'), [
+    //     email
+    //   ])
+    //   if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
+    //     throw new AppError('this email is already in use')
+    //   }
+    //   user.name = name ?? user.name
+    //   user.email = email ?? user.email
 
-    if (password && old_password) {
-      const checkOldPassword = await compare(old_password, user.password)
-      if (!checkOldPassword) {
-        throw new AppError('password does not match')
-      }
-      user.password = await hash(password, 8)
-    }
+    //   if (password && !old_password) {
+    //     throw new AppError(
+    //       'you need to enter the old password to set the new password!'
+    //     )
+    //   }
 
-    await database.run(
-      `
-    UPDATE users SET 
-      name = ?, 
-      email = ?, 
-      password = ?,
-      updated_at = DATETIME('now')
-      WHERE id = ?`,
-      [user.name, user.email, user.password, id]
-    )
+    //   if (password && old_password) {
+    //     const checkOldPassword = await compare(old_password, user.password)
+    //     if (!checkOldPassword) {
+    //       throw new AppError('password does not match')
+    //     }
+    //     user.password = await hash(password, 8)
+    //   }
+
+    //   await database.run(
+    //     table.increments('id'),
+    //     table.text('name'),
+    //     table.text('email'),
+    //     table.text('password'),
+    //     table.text('avatar'),
+    //     table.timestamp('updated_at').default(knex.fn.now()),
+    //     [user.name, user.email, user.password, id]
+    //   )
     return response.json()
   }
 }
