@@ -2,14 +2,14 @@ const knex = require('../database/knex')
 
 class NotesController {
   async create(request, response) {
-    const { title, description, rating, created_at, updated_at } = request.body
+    const { title, description, tags, created_at, updated_at } = request.body
     const { user_id } = request.params
 
     const note_id = await knex('notes').insert({
       title,
       description,
       user_id,
-      rating,
+      tags,
       created_at,
       updated_at
     })
@@ -17,7 +17,7 @@ class NotesController {
     const tagsInsert = tags.map(name => {
       return {
         note_id,
-        id,
+        user_id,
         user_id
       }
     })

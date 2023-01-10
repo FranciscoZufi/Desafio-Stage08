@@ -49,7 +49,6 @@ class UsersController {
 
     if (password && !old_password) {
       const checkOldPassword = await compare(old_password, user[0].password)
-      console.log({ checkOldPassword })
       if (!checkOldPassword) {
         throw new AppError('password does not match')
       }
@@ -61,7 +60,7 @@ class UsersController {
         name,
         email,
         avatar,
-        password: hash(password, 8),
+        password: await hash(password, 8),
         updated_at: knex.fn.now()
       })
     return response.json()
