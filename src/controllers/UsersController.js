@@ -47,12 +47,12 @@ class UsersController {
       )
     }
 
-    if (password && old_password) {
+    if (password && !old_password) {
       const checkOldPassword = await compare(old_password, user[0].password)
+      console.log({ checkOldPassword })
       if (!checkOldPassword) {
         throw new AppError('password does not match')
       }
-      // const hashedPassword = await hash(password, 8)
     }
 
     await knex('users')
@@ -65,6 +65,13 @@ class UsersController {
         updated_at: knex.fn.now()
       })
     return response.json()
+  }
+  async delete(request, response) {
+    const id = request.user.id
+
+    await knex('users').where({ id }).delete()
+
+    return response.status(201).json()
   }
 }
 
