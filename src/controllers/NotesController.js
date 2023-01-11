@@ -13,14 +13,15 @@ class NotesController {
       created_at,
       updated_at
     })
-
     const tagsInsert = tags.map(name => {
       return {
         note_id,
         user_id,
-        user_id
+        user_id,
+        name
       }
     })
+
     await knex('tags').insert(tagsInsert)
 
     response.json()
@@ -36,7 +37,7 @@ class NotesController {
     const { id } = request.params
 
     await knex('notes').where({ id }).delete()
-    return response.json()
+    return response.json({ message: 'successfully deleted note' })
   }
   async index(request, response) {
     const { title, user_id, tags } = request.query
