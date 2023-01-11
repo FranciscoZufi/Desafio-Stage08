@@ -2,7 +2,7 @@ const knex = require('../database/knex')
 
 class NotesController {
   async create(request, response) {
-    const { title, description, tags, created_at, updated_at } = request.body
+    const { title, description, tags } = request.body
     const { user_id } = request.params
 
     const note_id = await knex('notes').insert({
@@ -10,8 +10,8 @@ class NotesController {
       description,
       user_id,
       tags,
-      created_at,
-      updated_at
+      created_at: knex.fn.now(),
+      updated_at: null
     })
     const tagsInsert = tags.map(name => {
       return {
@@ -26,6 +26,19 @@ class NotesController {
 
     response.json()
   }
+  async update(request, response) {
+    const { title, description, tags } = request.body
+    const { user_id } = request.params
+
+    const update = await knex('users').where({ id: id }).update({
+      title,
+      description,
+      tags,
+      updated_at: knex.fn.now()
+    })
+    return response.json({ message: 'successfully updated note' })
+  }
+
   async show(request, response) {
     const { id } = request.params
     const note = await knex('notes').where({ id }).first()
